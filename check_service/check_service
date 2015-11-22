@@ -1,0 +1,66 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+
+options = {}
+
+opt_parser = OptionParser.new do |opt|
+  opt.banner = 'Usage: check_service [OPTIONS] service_name'
+  opt.separator  ''
+  opt.separator  'Options'
+
+  opt.on('-i','--init INITSYSTEM','which init system the service uses') do |init|
+    options[:init] = init
+  end
+
+  opt.on('-h','--help','help') do
+    puts opt_parser
+    exit 3
+  end
+end
+
+opt_parser.parse!
+
+if ARGV[-1] == nil
+  puts opt_parser
+  exit 3
+end
+
+def detect_init()
+  if File.exists?('/usr/bin/systemctl')
+    return 'systemd'
+  else
+    return 'upstart'
+  end
+end
+
+if options[:init] == nil
+  options[:init] = detect_init
+end
+
+case options[:init]
+when 'systemd'
+  system "/usr/bin/systemctl status #{ARGV[-1]} | /usr/bin/grep running >/dev/null 2>&1"
+  status = $?.exitstatus
+when 'upstart'
+  system "/usr/sbin/service #{ARGV[-1]} status >/dev/null 2>&1"
+  status = $?.exitstatus
+when 'supervisord'
+  system "/usr/bin/supervisorctl status #{ARGV[-1]} >/dev/null 2>&1"
+  status = $?.exitstatus
+else
+  puts opt_parser
+  exit 3
+end
+
+case status
+when 0
+  puts "OK - #{ARGV[-1]} is running"
+  exit 0
+when 1
+  puts "CRITICAL - #{ARGV[-1]} is not running"
+  exit 2
+else
+  puts "UNKNOWN - Could not determine the status of the #{ARGV[-1]} service"
+  exit 3
+end
