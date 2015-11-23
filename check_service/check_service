@@ -40,13 +40,13 @@ end
 
 case options[:init]
 when 'systemd'
-  system "/usr/bin/systemctl status #{ARGV[-1]} | /usr/bin/grep running >/dev/null 2>&1"
+  system "systemctl status #{ARGV[-1]} | /usr/bin/grep running >/dev/null 2>&1"
   status = $?.exitstatus
 when 'upstart'
-  system "/usr/sbin/service #{ARGV[-1]} status >/dev/null 2>&1"
+  system "service #{ARGV[-1]} status >/dev/null 2>&1"
   status = $?.exitstatus
 when 'supervisord'
-  system "/usr/bin/supervisorctl status #{ARGV[-1]} >/dev/null 2>&1"
+  system "supervisorctl status #{ARGV[-1]} >/dev/null 2>&1"
   status = $?.exitstatus
 else
   puts opt_parser
