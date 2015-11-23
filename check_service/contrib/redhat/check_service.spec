@@ -26,7 +26,7 @@ Requires: ruby
 %description
 A Nagios plugin to check the status of a Linux service.
 
-%prep -q
+%prep
 cp -p %SOURCE0 .
 cp -p %SOURCE1 .
 cp -p %SOURCE2 .
