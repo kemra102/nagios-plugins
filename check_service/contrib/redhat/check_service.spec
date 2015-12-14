@@ -7,12 +7,12 @@
 %if 0%{?rhel} == 7
   %define dist .el7
 %endif
-%define version 1.1
+%define version 1.2
 
 Summary: A Nagios plugin to check the status of a Linux service.
 Name: nagios-plugins-check-service
 Version: %{?version}
-Release: 1.20151123gitd7a00c7%{?dist}
+Release: 1.20151123gitc375c04%{?dist}
 License: BSD
 Group: Applications/System
 Source0: check_service
@@ -46,6 +46,9 @@ install -m 755 check_service %{buildroot}/%{_libdir}/nagios/plugins/
 %attr(0755, root, root) %{_libdir}/nagios/plugins/check_service
 
 %changelog
+* Mon Dec 14 2015 Danny Roberts <danny.roberts@skybettingandgaming.com> 1.2
+- Added support for Chef Server, Chef Manage & Chef Analytics Omnibus services.
+
 * Mon Nov 23 2015 Danny Roberts <danny.roberts@skybettingandgaming.com> 1.1
 - Make command work across distros that use upstart (not just Ubuntu).
 
