@@ -40,7 +40,7 @@ end
 
 case options[:init]
 when 'systemd'
-  system "systemctl status #{ARGV[-1]} | /usr/bin/grep running >/dev/null 2>&1"
+  system "systemctl status #{ARGV[-1]} | grep running >/dev/null 2>&1"
   status = $?.exitstatus
 when 'upstart'
   system "service #{ARGV[-1]} status >/dev/null 2>&1"
@@ -48,6 +48,27 @@ when 'upstart'
 when 'supervisord'
   system "supervisorctl status #{ARGV[-1]} >/dev/null 2>&1"
   status = $?.exitstatus
+when 'chef-server-ctl'
+  system "chef-server-ctl status #{ARGV[-1]} >/dev/null 2>&1"
+  if $?.exitstatus == 3
+    status = 1
+  else
+    status = $?.exitstatus
+  end
+when 'opscode-manage-ctl'
+  system "opscode-manage-ctl status #{ARGV[-1]} >/dev/null 2>&1"
+  if $?.exitstatus == 3
+    status = 1
+  else
+    status = $?.exitstatus
+  end
+when 'opscode-analytics-ctl'
+  system "opscode-analytics-ctl status #{ARGV[-1]} >/dev/null 2>&1"
+  if $?.exitstatus == 3
+    status = 1
+  else
+    status = $?.exitstatus
+  end
 else
   puts opt_parser
   exit 3

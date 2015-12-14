@@ -5,12 +5,15 @@ This Nagios check will check if a Linux service is running and supports the foll
 * systemd
 * upstart
 * supervisord
+* chef-server-ctl
+* opscode-manage-ctl
+* opscode-analytics-ctl
 
 The `systemd` & `upstart` init types are selected automatically based on the distro being ran.
 
 The init type for a check can be overridden using the `-i` option.
 
-> NOTE: This is the only way to check a `supervisord` service.
+> NOTE: This is the only way to check a `supervisord` service or any of the Chef Omnibus related services.
 
 Example usage:
 
