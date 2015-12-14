@@ -12,7 +12,7 @@
 Summary: A Nagios plugin to check the status of a Linux service.
 Name: nagios-plugins-check-service
 Version: %{?version}
-Release: 1.20151123gitc375c04%{?dist}
+Release: 1.20151214gitc375c04%{?dist}
 License: BSD
 Group: Applications/System
 Source0: check_service
