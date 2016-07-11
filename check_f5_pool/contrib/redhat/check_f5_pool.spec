@@ -34,7 +34,7 @@ cp -p %SOURCE2 .
 %install
 rm -rf %{buildroot}
 mkdir -p %{buildroot}/%{_libdir}/nagios/plugins/
-install -m 755 check_service %{buildroot}/%{_libdir}/nagios/plugins/
+install -m 755 check_f5_pool %{buildroot}/%{_libdir}/nagios/plugins/
 
 %files
 %if 0%{?rhel} == 7
