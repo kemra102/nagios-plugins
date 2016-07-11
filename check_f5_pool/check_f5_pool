@@ -1,0 +1,76 @@
+#!/usr/bin/env ruby
+
+require 'net/http'
+require 'openssl'
+require 'uri'
+require 'json'
+require 'optparse'
+
+total_members = 0
+available_members = 0
+
+options = {}
+
+opt_parser = OptionParser.new do |opt|
+  opt.banner = 'Usage: check_f5_pool [OPTIONS]'
+  opt.separator  ''
+  opt.separator  'Options'
+
+  opt.on('-a','--address ADDRESS','the IP or FQDN of the F5.') do |address|
+    options[:address] = address
+  end
+
+  opt.on('-n','--poolname POOLNAME','the name of the pool to be checked.') do |poolname|
+    options[:poolname] = poolname
+  end
+
+  opt.on('-u','--user USERNAME','the username to access the F5 with.') do |user|
+    options[:user] = user
+  end
+
+  opt.on('-p','--password PASSWORD','the password to access the F5 with.') do |password|
+    options[:password] = password
+  end
+
+  opt.on('-h','--help','help') do
+    puts opt_parser
+    exit 3
+  end
+end
+
+opt_parser.parse!
+
+if options.empty?
+  puts opt_parser
+  exit 3
+end
+
+uri = URI.parse("#{options[:address]}/mgmt/tm/ltm/pool/#{options[:poolname]}/members")
+http = Net::HTTP.new(uri.host, uri.port)
+http.use_ssl = true if uri.port == 443
+http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+request = Net::HTTP::Get.new(uri.request_uri)
+request.basic_auth(options[:user], options[:password])
+data = JSON.parse(http.request(request).body)
+
+data['items'].each do |item|
+  total_members += 1
+  available_members += 1 if item['state'] == 'up'
+end
+
+downed_members = total_members - available_members
+
+case downed_members
+when 0
+  puts "OK - All pool members in #{options[:poolname]} are available."
+  exit 0
+when downed_members < total_members
+  puts "WARNING - #{options[:downed_members]} pool members in #{options[:poolname]} are down!"
+  exit 1
+when downed_members = total_members
+  puts "CRITICAL - All pool members in #{options[:poolname]} are down!"
+  exit 2
+else
+  puts "UNKNOWN - Cannot determine the status of the pool members in #{options[:poolname]}..."
+  exit 3
+end
