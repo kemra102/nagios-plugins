@@ -1,0 +1,74 @@
+#!/usr/bin/env ruby
+
+require 'optparse'
+
+options = {}
+
+opt_parser = OptionParser.new do |opt|
+  opt.banner = 'Usage: check_open_files [OPTIONS]'
+  opt.separator  ''
+  opt.separator  'Options'
+
+  opt.on('-u','--user USERNAME','user name of the user to check open files for.') do |user|
+    options[:user] = user
+  end
+
+  opt.on('-w','--warning WARNING','percentage of open files to raise a warning on.') do |warning|
+    options[:warning] = warning
+  end
+
+  opt.on('-c','--critical CRITICAL','percentage of open files to raise a critical on.') do |critical|
+    options[:critical] = critical
+  end
+
+  opt.on('-h','--help','help') do
+    puts opt_parser
+    exit 3
+  end
+end
+
+opt_parser.parse!
+
+if options.empty?
+  puts opt_parser
+  exit 3
+end
+
+if options[:user].nil?
+  puts opt_parser
+  exit 3
+end
+
+# Check for failed shell commands
+def check_exit_code(output, user)
+  # output always results in a float, 0.0 shows a failure of some description
+  if output == 0.0
+    puts "UNKNOWN - Unable to determine how many files #{user} has open."
+    exit 3
+  end
+end
+
+# Set default limits if not explicitly set
+options[:warning] = 65 if options[:warning].nil?
+options[:critical] = 85 if options[:critical].nil?
+
+# Get open file info
+open_files = `lsof | awk '{ print $3 }' | grep #{options[:user]} | wc -l`.to_f
+check_exit_code(open_files, options[:user])
+
+max_files = `sudo -u #{options[:user]} bash -c 'ulimit -Hn'`.to_f
+check_exit_code(max_files, options[:user])
+
+percentage = (open_files / max_files) * 100
+
+# Create output
+if percentage.to_i >= options[:critical].to_i
+  puts "CRITICAL - #{options[:user]} has #{open_files.to_i} open files!"
+  exit 2
+elsif percentage.to_i >= options[:warning].to_i
+  puts "WARNING - #{options[:user]} has #{open_files.to_i} open files!"
+  exit 1
+else
+  puts "OK - #{options[:user]} has #{open_files.to_i} open files."
+  exit 0
+end
