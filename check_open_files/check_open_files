@@ -42,7 +42,7 @@ end
 # Check for failed shell commands
 def check_exit_code(output, user)
   # output always results in a float, 0.0 shows a failure of some description
-  if output == 0.0
+  if output == '0.0'
     puts "UNKNOWN - Unable to determine how many files #{user} has open."
     exit 3
   end
@@ -53,13 +53,13 @@ options[:warning] = 65 if options[:warning].nil?
 options[:critical] = 85 if options[:critical].nil?
 
 # Get open file info
-open_files = `lsof | awk '{ print $3 }' | grep #{options[:user]} | wc -l`.to_f
+open_files = `lsof | awk '{ print $3 }' | grep #{options[:user]} | wc -l`
 check_exit_code(open_files, options[:user])
 
 max_files = `sudo -u #{options[:user]} bash -c 'ulimit -Hn'`.to_f
 check_exit_code(max_files, options[:user])
 
-percentage = (open_files / max_files) * 100
+percentage = (open_files.to_f / max_files) * 100
 
 # Create output
 if percentage.to_i >= options[:critical].to_i
@@ -72,3 +72,4 @@ else
   puts "OK - #{options[:user]} has #{open_files.to_i} open files."
   exit 0
 end
+
